@@ -6,21 +6,27 @@
 #include<sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
-
-void ShowTree(char* pos,int gap);
+/*
+2015726027 김종우
+*/
 void FilePerm(mode_t file_mode);
+void ShowTree(char* position,int gap);
 
 char list[20]; //permission
+int dirCnt = 0; //디렉토리 파일 개수
+int totalCnt = 0; // 총 파일 갯수
 
 int main()
 {
     char* position;
     position = getcwd(position, 255);
-    printf("\n");
+    puts("");
     ShowTree(position,0);        
-    exit(0);
+    puts("");
+    printf("%d directories, %d files\n", dirCnt, totalCnt);
+    return 0;
 }
-void ShowTree(char* pos,int gap)
+void ShowTree(char* position,int gap)
 {  
     DIR *dir;                 
     struct dirent *direntp;     
@@ -28,12 +34,12 @@ void ShowTree(char* pos,int gap)
     struct passwd *myPwd;
     char userName[255];
     mode_t file_mode;
-    if( (dir=opendir(pos)) == NULL)
+    if( (dir=opendir(position)) == NULL)
     {
         perror("Not exist directory \n");
         exit(0);
     }
-    chdir(pos);   
+    chdir(position);   
     while(direntp = readdir(dir))
     {
         memset(&stat, 0, sizeof(struct stat));
@@ -43,26 +49,29 @@ void ShowTree(char* pos,int gap)
         lstat(direntp->d_name,&stat);  
         if(S_ISDIR(stat.st_mode))
         {  
-            if(!strcmp(".",direntp->d_name) || !strcmp("..",direntp->d_name))
+            if(strncmp(".",direntp->d_name,1) == 0 || !strcmp("..",direntp->d_name))
                 continue;
             //get ownerName
             // myPwd = getpwuid(stat.st_uid);
             lstat(direntp->d_name,&stat); 
             file_mode = stat.st_mode; // get file permission
             FilePerm(file_mode);
-            printf("%*s┣━━━[%ld %ld %s %s  %6d]     %c[34m%s%c[0m\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, (int)stat.st_size, 27,direntp->d_name,27);
-
+            printf("%*s┣━━━[%ld %ld %s %s  %8d]      %c[34m%s%c[0m\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, (int)stat.st_size, 27,direntp->d_name,27);
+            ++dirCnt;
             ShowTree(direntp->d_name,gap+4); 
             chdir("..");
         }
         else if (S_ISREG(stat.st_mode))
         {
-                        lstat(direntp->d_name,&stat); 
+            if(strncmp(".",direntp->d_name, 1) == 0)
+                continue;
+            lstat(direntp->d_name,&stat); 
             file_mode = stat.st_mode; // get file permission
             FilePerm(file_mode);
             // 간격, inode, 디바이스 번호 권한 소유자 파일사이즈 파일이름으로 출력
             // 간격, inode, 디바이스 번호,권한 소유자          파일이름 구현완료
-            printf("%*s┣━━━[%ld %ld %s %s  %6d]      %s\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, (int)stat.st_size, direntp->d_name);
+            printf("%*s┣━━━[%ld %ld %s %s  %8d]      %s\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, (int)stat.st_size, direntp->d_name);
+            ++totalCnt;
         }
 	
     }
