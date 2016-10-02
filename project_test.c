@@ -6,10 +6,11 @@
 #include<sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
+
 void ShowTree(char* pos,int gap);
 void FilePerm(mode_t file_mode);
 
-char list[20];
+char list[20]; //permission
 
 int main()
 {
@@ -49,7 +50,7 @@ void ShowTree(char* pos,int gap)
             lstat(direntp->d_name,&stat); 
             file_mode = stat.st_mode; // get file permission
             FilePerm(file_mode);
-            printf("%*s┗━━━[%ld %ld %s %s]   %s\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, direntp->d_name);
+            printf("%*s┣━━━[%ld %ld %s %s  %6d]     %c[34m%s%c[0m\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, (int)stat.st_size, 27,direntp->d_name,27);
 
             ShowTree(direntp->d_name,gap+4); 
             chdir("..");
@@ -61,7 +62,7 @@ void ShowTree(char* pos,int gap)
             FilePerm(file_mode);
             // 간격, inode, 디바이스 번호 권한 소유자 파일사이즈 파일이름으로 출력
             // 간격, inode, 디바이스 번호,권한 소유자          파일이름 구현완료
-            printf("%*s┗━━━[%ld %ld %s %s]   %s\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, direntp->d_name);
+            printf("%*s┣━━━[%ld %ld %s %s  %6d]      %s\n",gap,"", stat.st_ino, stat.st_dev, list, myPwd->pw_name, (int)stat.st_size, direntp->d_name);
         }
 	
     }
@@ -70,7 +71,7 @@ void ShowTree(char* pos,int gap)
 // void line(int gap)
 // {
 //     int i;
-    
+//     printf("┃  ");
 //     for ()
 // }
 
